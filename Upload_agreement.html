@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2>Upload Agreement PDF</h2>
+
+  <input type="file" id="file" accept="application/pdf" />
+  <button onclick="upload()">Upload</button>
+
+  <p id="status"></p>
+
+  <script>
+    function upload() {
+      const file = document.getElementById("file").files[0];
+      const reader = new FileReader();
+
+      reader.onload = function () {
+        const base64 = reader.result.split(",")[1];
+
+        fetch("https://cjo6nwt50k.execute-api.eu-west-1.amazonaws.com/uploads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: file.name,
+            fileContent: base64
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("status").innerText = "Upload successful";
+        })
+        .catch(err => {
+          document.getElementById("status").innerText = "Upload failed";
+        });
+      };
+
+      reader.readAsDataURL(file);
+    }
+  </script>
+</body>
+</html>
