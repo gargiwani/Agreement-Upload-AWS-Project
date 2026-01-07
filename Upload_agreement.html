@@ -6,11 +6,14 @@
   <input type="file" id="file" accept="application/pdf" />
   <button onclick="upload()">Upload</button>
 
+  <input type="email" id="email" placeholder="Enter your email" />
+  <br><br>
   <p id="status"></p>
 
   <script>
     function upload() {
       const file = document.getElementById("file").files[0];
+      const email = document.getElementById("email").value; 
       const reader = new FileReader();
 
       reader.onload = function () {
@@ -21,7 +24,8 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             fileName: file.name,
-            fileContent: base64
+            fileContent: base64,
+            email: email
           })
         })
         .then(res => res.json())
@@ -38,3 +42,4 @@
   </script>
 </body>
 </html>
+
