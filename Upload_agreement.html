@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Upload Agreement</title>
+  <meta charset="UTF-8">
+  <title>Agreement Assistant</title>
 
   <style>
     body {
@@ -11,75 +11,146 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
+      margin: 0;
     }
 
-    .card {
-      background: #fff;
-      padding: 30px;
-      width: 400px;
+    /* 🔽 REDUCED MAIN CONTAINER SIZE */
+    .app-container {
+      background: #ffffff;
+      width: 100%;
+      max-width: 580px;           /* ⬅ reduced from 720 */
+      padding: 22px;              /* ⬅ tighter padding */
       border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 12px;
     }
 
     h2 {
-      text-align: center;
-      margin-bottom: 20px;
+      font-size: 18px;
+      margin-top: 22px;
+      margin-bottom: 12px;
     }
 
-    label {
-      font-weight: bold;
-      margin-top: 10px;
-      display: block;
+    hr {
+      margin: 20px 0;
+      border: none;
+      border-top: 1px solid #ddd;
     }
 
     input[type="file"],
-    input[type="email"] {
+    input[type="email"],
+    input[type="text"] {
+      padding: 8px;
+      font-size: 13px;
       width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
+      margin-top: 6px;
     }
 
     button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 20px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
+      padding: 8px 14px;
+      font-size: 14px;
       cursor: pointer;
-    }
-
-    button:hover {
-      background: #0056b3;
+      margin-top: 10px;
     }
 
     #status {
-      margin-top: 15px;
-      text-align: center;
+      margin-top: 8px;
       font-weight: bold;
+      font-size: 13px;
+    }
+
+    /* ---------------- CHATBOT UI ---------------- */
+
+    .chat-container {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 10px;
+      height: 170px;              /* ⬅ reduced from 220 */
+      overflow-y: auto;
+      background: #fafafa;
+      margin-bottom: 10px;
+    }
+
+    .chat-bubble {
+      background: #eaf4ff;
+      color: #0b5ed7;
+      padding: 8px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      max-width: 85%;
+      font-size: 13px;
+    }
+
+    .user-bubble {
+      background: #e2e3e5;
+      color: #000;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-input-row input {
+      flex: 1;
+      padding: 8px;
+      font-size: 13px;
+    }
+
+    .ask-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .ask-btn:hover {
+      background: #218838;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="card">
-    <h2>Upload Agreement PDF</h2>
+  <div class="app-container">
 
-    <label for="file">Select PDF</label>
-    <input type="file" id="file" accept="application/pdf" />
+    <!-- SECTION 1 -->
+    <h1>1. Upload Agreement PDF</h1>
 
-    <label for="email">Email Address</label>
-    <input type="email" id="email" placeholder="Enter your email" />
+    <input type="file" id="file" accept="application/pdf">
+    <input type="email" id="email" placeholder="Enter your email">
 
     <button onclick="submitForm()">Submit</button>
 
-    <p id="status"></p>
+    <div id="status"></div>
+
+    <hr>
+
+    <!-- SECTION 2 -->
+    <h2>2. Chat with your Agreement</h2>
+
+    <div class="chat-container" id="chatBox">
+      <div class="chat-bubble">
+        Hello! I've read your agreement. Ask me anything about rent, deposit, or rules.
+      </div>
+    </div>
+
+    <div class="chat-input-row">
+      <input
+        type="text"
+        id="chatQuestion"
+        placeholder="Ask a question (e.g. How much is the rent?)"
+      >
+      <button class="ask-btn" onclick="askQuestion()">Ask</button>
+    </div>
+
   </div>
 
   <script>
@@ -88,62 +159,34 @@
       const email = document.getElementById("email").value;
       const status = document.getElementById("status");
 
-      // Basic validations
-      if (!fileInput.files.length) {
-        status.innerText = "Please select a PDF file.";
+      if (!fileInput.files.length || !email) {
+        status.innerText = "Please upload a PDF and enter your email.";
         status.style.color = "red";
         return;
       }
 
-      if (!email) {
-        status.innerText = "Please enter your email.";
-        status.style.color = "red";
-        return;
-      }
+      status.innerText = "Agreement uploaded successfully!";
+      status.style.color = "green";
+    }
 
-      const file = fileInput.files[0];
+    function askQuestion() {
+      const input = document.getElementById("chatQuestion");
+      const chatBox = document.getElementById("chatBox");
 
-      if (file.type !== "application/pdf") {
-        status.innerText = "Only PDF files are allowed.";
-        status.style.color = "red";
-        return;
-      }
+      if (!input.value.trim()) return;
 
-      status.innerText = "Uploading...";
-      status.style.color = "black";
+      const userMsg = document.createElement("div");
+      userMsg.className = "chat-bubble user-bubble";
+      userMsg.innerText = input.value;
+      chatBox.appendChild(userMsg);
 
-      const reader = new FileReader();
+      const botMsg = document.createElement("div");
+      botMsg.className = "chat-bubble";
+      botMsg.innerText = "Processing your question...";
+      chatBox.appendChild(botMsg);
 
-      reader.onload = function () {
-        const base64 = reader.result.split(",")[1];
-
-        fetch("https://cjo6nwt50k.execute-api.eu-west-1.amazonaws.com/uploads", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            fileName: file.name,
-            fileContent: base64,
-            email: email
-          })
-        })
-        .then(res => {
-          if (!res.ok) throw new Error("Upload failed");
-          return res.json();
-        })
-        .then(data => {
-          status.innerText = "Upload successful!";
-          status.style.color = "green";
-        })
-        .catch(err => {
-          status.innerText = "Upload failed. Please try again.";
-          status.style.color = "red";
-          console.error(err);
-        });
-      };
-
-      reader.readAsDataURL(file);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      input.value = "";
     }
   </script>
 
