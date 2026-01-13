@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Agreement Assistant</title>
 
   <style>
@@ -15,12 +15,12 @@
       margin: 0;
     }
 
-    /* 🔽 REDUCED MAIN CONTAINER SIZE */
+    /* MAIN CARD */
     .app-container {
       background: #ffffff;
       width: 100%;
-      max-width: 580px;           /* ⬅ reduced from 720 */
-      padding: 22px;              /* ⬅ tighter padding */
+      max-width: 580px;
+      padding: 22px;
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
@@ -36,41 +36,59 @@
       margin-bottom: 12px;
     }
 
-    hr {
-      margin: 20px 0;
-      border: none;
-      border-top: 1px solid #ddd;
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+      font-size: 14px;
     }
 
     input[type="file"],
     input[type="email"],
     input[type="text"] {
-      padding: 8px;
-      font-size: 13px;
       width: 100%;
+      padding: 8px;
       margin-top: 6px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 13px;
     }
 
     button {
-      padding: 8px 14px;
+      width: 100%;
+      padding: 10px;
+      margin-top: 14px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
       font-size: 14px;
       cursor: pointer;
-      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #0056b3;
     }
 
     #status {
-      margin-top: 8px;
+      margin-top: 10px;
+      text-align: center;
       font-weight: bold;
       font-size: 13px;
     }
 
-    /* ---------------- CHATBOT UI ---------------- */
+    hr {
+      margin: 22px 0;
+      border: none;
+      border-top: 1px solid #ddd;
+    }
 
+    /* CHATBOT */
     .chat-container {
       border: 1px solid #ddd;
       border-radius: 6px;
       padding: 10px;
-      height: 170px;              /* ⬅ reduced from 220 */
+      height: 170px;
       overflow-y: auto;
       background: #fafafa;
       margin-bottom: 10px;
@@ -98,8 +116,6 @@
 
     .chat-input-row input {
       flex: 1;
-      padding: 8px;
-      font-size: 13px;
     }
 
     .ask-btn {
@@ -109,6 +125,7 @@
       padding: 8px 14px;
       border-radius: 4px;
       font-size: 13px;
+      cursor: pointer;
     }
 
     .ask-btn:hover {
@@ -124,8 +141,11 @@
     <!-- SECTION 1 -->
     <h1>1. Upload Agreement PDF</h1>
 
-    <input type="file" id="file" accept="application/pdf">
-    <input type="email" id="email" placeholder="Enter your email">
+    <label for="file">Select PDF</label>
+    <input type="file" id="file" accept="application/pdf" />
+
+    <label for="email">Email Address</label>
+    <input type="email" id="email" placeholder="Enter your email" />
 
     <button onclick="submitForm()">Submit</button>
 
@@ -138,7 +158,7 @@
 
     <div class="chat-container" id="chatBox">
       <div class="chat-bubble">
-        Hello! I've read your agreement. Ask me anything about rent, deposit, or rules.
+        Hello! I've read your agreement. Ask me anything about the rent, deposit, or rules.
       </div>
     </div>
 
@@ -147,7 +167,7 @@
         type="text"
         id="chatQuestion"
         placeholder="Ask a question (e.g. How much is the rent?)"
-      >
+      />
       <button class="ask-btn" onclick="askQuestion()">Ask</button>
     </div>
 
@@ -159,16 +179,65 @@
       const email = document.getElementById("email").value;
       const status = document.getElementById("status");
 
-      if (!fileInput.files.length || !email) {
-        status.innerText = "Please upload a PDF and enter your email.";
+      if (!fileInput.files.length) {
+        status.innerText = "Please select a PDF file.";
         status.style.color = "red";
         return;
       }
 
-      status.innerText = "Agreement uploaded successfully!";
-      status.style.color = "green";
+      if (!email) {
+        status.innerText = "Please enter your email.";
+        status.style.color = "red";
+        return;
+      }
+
+      const file = fileInput.files[0];
+
+      if (file.type !== "application/pdf") {
+        status.innerText = "Only PDF files are allowed.";
+        status.style.color = "red";
+        return;
+      }
+
+      status.innerText = "Uploading...";
+      status.style.color = "black";
+
+      const reader = new FileReader();
+
+      reader.onload = function () {
+        const base64 = reader.result.split(",")[1];
+
+        // ✅ SAME AWS API YOU ALREADY USE
+        fetch("https://cjo6nwt50k.execute-api.eu-west-1.amazonaws.com/uploads", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            fileName: file.name,
+            fileContent: base64,
+            email: email
+          })
+        })
+        .then(res => {
+          if (!res.ok) throw new Error("Upload failed");
+          return res.json();
+        })
+        .then(() => {
+          status.innerText = "Upload successful!";
+          status.style.color = "green";
+        })
+        .catch(err => {
+          status.innerText = "Upload failed. Please try again.";
+          status.style.color = "red";
+          console.error(err);
+        });
+      };
+
+      reader.readAsDataURL(file);
     }
 
+    // UI-only chatbot (backend will connect later)
     function askQuestion() {
       const input = document.getElementById("chatQuestion");
       const chatBox = document.getElementById("chatBox");
