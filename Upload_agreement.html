@@ -1,263 +1,107 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Agreement Assistant</title>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-
-    /* MAIN CARD */
-    .app-container {
-      background: #ffffff;
-      width: 100%;
-      max-width: 580px;
-      padding: 22px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      font-size: 20px;
-      margin-bottom: 12px;
-    }
-
-    h2 {
-      font-size: 18px;
-      margin-top: 22px;
-      margin-bottom: 12px;
-    }
-
-    label {
-      font-weight: bold;
-      margin-top: 10px;
-      display: block;
-      font-size: 14px;
-    }
-
-    input[type="file"],
-    input[type="email"],
-    input[type="text"] {
-      width: 100%;
-      padding: 8px;
-      margin-top: 6px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 13px;
-    }
-
-    button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 14px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #0056b3;
-    }
-
-    #status {
-      margin-top: 10px;
-      text-align: center;
-      font-weight: bold;
-      font-size: 13px;
-    }
-
-    hr {
-      margin: 22px 0;
-      border: none;
-      border-top: 1px solid #ddd;
-    }
-
-    /* CHATBOT */
-    .chat-container {
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 10px;
-      height: 170px;
-      overflow-y: auto;
-      background: #fafafa;
-      margin-bottom: 10px;
-    }
-
-    .chat-bubble {
-      background: #eaf4ff;
-      color: #0b5ed7;
-      padding: 8px;
-      border-radius: 6px;
-      margin-bottom: 6px;
-      max-width: 85%;
-      font-size: 13px;
-    }
-
-    .user-bubble {
-      background: #e2e3e5;
-      color: #000;
-    }
-
-    .chat-input-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .chat-input-row input {
-      flex: 1;
-    }
-
-    .ask-btn {
-      background: #28a745;
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 4px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    .ask-btn:hover {
-      background: #218838;
-    }
-  </style>
+    <title>Rental Agreement Portal</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+        .container { max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 10px; }
+        
+        /* Chat UI Styling */
+        #chat-section { margin-top: 40px; border-top: 2px solid #eee; pt: 20px; }
+        #chat-window { height: 250px; border: 1px solid #ccc; overflow-y: auto; padding: 15px; background: #f9f9f9; border-radius: 5px; margin-bottom: 10px; }
+        .user-msg { color: #2c3e50; font-weight: bold; margin-bottom: 10px; }
+        .ai-msg { color: #2980b9; margin-bottom: 15px; background: #eef6fc; padding: 8px; border-radius: 5px; }
+        .loading { font-style: italic; color: #7f8c8d; }
+        input[type="text"] { width: 75%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        button.chat-btn { padding: 10px 15px; background-color: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
 </head>
-
 <body>
 
-  <div class="app-container">
-
-    <!-- SECTION 1 -->
-    <h1>1. Upload Agreement PDF</h1>
-
-    <label for="file">Select PDF</label>
+<div class="container">
+    <h2>1. Upload Agreement PDF</h2>
     <input type="file" id="file" accept="application/pdf" />
-
-    <label for="email">Email Address</label>
+    <button onclick="upload()">Upload</button>
+    <br><br>
     <input type="email" id="email" placeholder="Enter your email" />
-
     <button onclick="submitForm()">Submit</button>
+    <p id="status"></p>
 
-    <div id="status"></div>
-
-    <hr>
-
-    <!-- SECTION 2 -->
-    <h2>2. Chat with your Agreement</h2>
-
-    <div class="chat-container" id="chatBox">
-      <div class="chat-bubble">
-        Hello! I've read your agreement. Ask me anything about the rent, deposit, or rules.
-      </div>
+    <div id="chat-section">
+        <h2>2. Chat with your Agreement</h2>
+        <div id="chat-window">
+            <div class="ai-msg">Hello! I've read your agreement. Ask me anything about the rent, deposit, or rules.</div>
+        </div>
+        <input type="text" id="userQuestion" placeholder="Ask a question (e.g. How much is the rent?)" />
+        <button class="chat-btn" onclick="askChatbot()">Ask</button>
     </div>
+</div>
 
-    <div class="chat-input-row">
-      <input
-        type="text"
-        id="chatQuestion"
-        placeholder="Ask a question (e.g. How much is the rent?)"
-      />
-      <button class="ask-btn" onclick="askQuestion()">Ask</button>
-    </div>
+<script>
+    // --- YOUR EXISTING UPLOAD LOGIC ---
+    function upload() {
+        const file = document.getElementById("file").files[0];
+        const email = document.getElementById("email").value; 
+        const reader = new FileReader();
 
-  </div>
+        reader.onload = function () {
+            const base64 = reader.result.split(",")[1];
+            fetch("https://cjo6nwt50k.execute-api.eu-west-1.amazonaws.com/uploads", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    fileName: file.name,
+                    fileContent: base64,
+                    email: email
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("status").innerText = "Upload successful";
+            })
+            .catch(err => {
+                document.getElementById("status").innerText = "Upload failed";
+            });
+        };
+        reader.readAsDataURL(file);
+    }
 
-  <script>
-    function submitForm() {
-      const fileInput = document.getElementById("file");
-      const email = document.getElementById("email").value;
-      const status = document.getElementById("status");
+    // --- NEW CHATBOT LOGIC ---
+    function askChatbot() {
+        const questionInput = document.getElementById("userQuestion");
+        const question = questionInput.value;
+        const chatWindow = document.getElementById("chat-window");
 
-      if (!fileInput.files.length) {
-        status.innerText = "Please select a PDF file.";
-        status.style.color = "red";
-        return;
-      }
+        if (!question) return;
 
-      if (!email) {
-        status.innerText = "Please enter your email.";
-        status.style.color = "red";
-        return;
-      }
+        // 1. Display User Question
+        chatWindow.innerHTML += `<div class="user-msg">You: ${question}</div>`;
+        
+        // 2. Show Loading State
+        const loadingId = "load-" + Date.now();
+        chatWindow.innerHTML += `<div class="ai-msg loading" id="${loadingId}">AI is thinking...</div>`;
+        questionInput.value = ""; // Clear input
+        chatWindow.scrollTop = chatWindow.scrollHeight;
 
-      const file = fileInput.files[0];
-
-      if (file.type !== "application/pdf") {
-        status.innerText = "Only PDF files are allowed.";
-        status.style.color = "red";
-        return;
-      }
-
-      status.innerText = "Uploading...";
-      status.style.color = "black";
-
-      const reader = new FileReader();
-
-      reader.onload = function () {
-        const base64 = reader.result.split(",")[1];
-
-        // ✅ SAME AWS API YOU ALREADY USE
-        fetch("https://cjo6nwt50k.execute-api.eu-west-1.amazonaws.com/uploads", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            fileName: file.name,
-            fileContent: base64,
-            email: email
-          })
+        // 3. Call your API Gateway (We will get this URL in the next step)
+        // REPLACE THE URL BELOW ONCE WE CREATE THE API GATEWAY
+        fetch("https://lf229mmnf3.execute-api.eu-west-1.amazonaws.com/Test/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ "question": question })
         })
-        .then(res => {
-          if (!res.ok) throw new Error("Upload failed");
-          return res.json();
-        })
-        .then(() => {
-          status.innerText = "Upload successful!";
-          status.style.color = "green";
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById(loadingId).remove(); // Remove loading text
+            chatWindow.innerHTML += `<div class="ai-msg"><strong>AI:</strong> ${data.answer}</div>`;
+            chatWindow.scrollTop = chatWindow.scrollHeight;
         })
         .catch(err => {
-          status.innerText = "Upload failed. Please try again.";
-          status.style.color = "red";
-          console.error(err);
+            document.getElementById(loadingId).innerText = "Error: Could not reach the AI.";
+            console.error(err);
         });
-      };
-
-      reader.readAsDataURL(file);
     }
-
-    // UI-only chatbot (backend will connect later)
-    function askQuestion() {
-      const input = document.getElementById("chatQuestion");
-      const chatBox = document.getElementById("chatBox");
-
-      if (!input.value.trim()) return;
-
-      const userMsg = document.createElement("div");
-      userMsg.className = "chat-bubble user-bubble";
-      userMsg.innerText = input.value;
-      chatBox.appendChild(userMsg);
-
-      const botMsg = document.createElement("div");
-      botMsg.className = "chat-bubble";
-      botMsg.innerText = "Processing your question...";
-      chatBox.appendChild(botMsg);
-
-      chatBox.scrollTop = chatBox.scrollHeight;
-      input.value = "";
-    }
-  </script>
+</script>
 
 </body>
 </html>
