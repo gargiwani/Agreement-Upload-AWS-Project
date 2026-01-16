@@ -66,6 +66,18 @@
         reader.readAsDataURL(file);
     }
 
+    function submitForm() {
+        const email = document.getElementById("email").value.trim();
+
+    // If email is blank → do nothing (no error)
+        if (!email) {
+            return;
+        }
+
+    // If email is entered → show submitted message
+    document.getElementById("status").innerText = "Submitted ✅";
+}
+
     // --- NEW CHATBOT LOGIC ---
     function askChatbot() {
         const questionInput = document.getElementById("userQuestion");
